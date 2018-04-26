@@ -8,6 +8,31 @@ Graph modularity extension will do community detection and partian a graph's ver
 
 ![](./example/modularity.png)
 
+[**New Feature**] Add a method to access graph community detection result.
+
+```javascript
+var communities = chart._api.getCommunities()
+
+console.log(communities)
+```
+输出如下结果：
+
+```javascript
+[
+  {
+    nodes: ["1"],       // 社群组成节点
+    color: "#c23531"    // 节点颜色
+  },
+  {
+    nodes: ["21", "41", "52"],
+    color: "#d48265"
+  },
+  ...
+]
+
+```
+
+
 ## Install
 
 ```html

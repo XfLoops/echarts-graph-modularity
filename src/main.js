@@ -5,12 +5,16 @@ var createNGraph = require('ngraph.graph');
 function createModularityVisual(chartType) {
     return function (ecModel, api) {
         var paletteScope = {};
+        
         ecModel.eachSeriesByType(chartType, function (seriesModel) {
             var modularityOpt = seriesModel.get('modularity');
+            var groups = []
+            
             if (modularityOpt) {
                 var graph = seriesModel.getGraph();
                 var idIndexMap = {};
                 var ng = createNGraph();
+                
                 graph.data.each(function (idx) {
                     var node = graph.getNodeByIndex(idx);
                     idIndexMap[node.id] = idx;
@@ -29,22 +33,38 @@ function createModularityVisual(chartType) {
 
                 var modularity = new Modularity(seriesModel.get('modularity.resolution') || 1);
                 var result = modularity.execute(ng);
-
                 var communities = {};
+                var groupsHash = {}
+                
                 for (var id in result) {
                     var comm = result[id];
                     communities[comm] = communities[comm] || 0;
                     communities[comm]++;
+  
+                    if (!groupsHash[comm]) {
+                        groupsHash[comm] = [id]
+                    }
+                    else {
+                        groupsHash[comm].push(id)
+                    }
                 }
+                
                 var communitiesList = Object.keys(communities);
+                
                 if (seriesModel.get('modularity.sort')) {
                     communitiesList.sort(function (a, b) {
                         return b - a;
                     });
                 }
+                
                 var colors = {};
+                
                 communitiesList.forEach(function (comm) {
                     colors[comm] = seriesModel.getColorFromPalette(comm, paletteScope);
+                    groups.push({
+                        nodes: groupsHash[comm],
+                        color: colors[comm]
+                    })
                 });
 
                 for (var id in result) {
@@ -70,6 +90,10 @@ function createModularityVisual(chartType) {
                         edge.setVisual('color', color);
                     }
                 });
+            }
+  
+            api.getCommunities = function () {
+                return groups
             }
         });
     };
